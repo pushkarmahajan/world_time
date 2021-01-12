@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart';
-import 'dart:convert';
+import 'package:world_time/services/world_time.dart';
 
 class Loading extends StatefulWidget {
   @override
@@ -8,31 +7,36 @@ class Loading extends StatefulWidget {
 }
 
 class _LoadingState extends State<Loading> {
-
-  void getTime() async{
-    Response response = await get('https://worldtimeapi.org/api/timezone/Atlantic/South_Georgia');
-    Map data = jsonDecode(response.body);
-    // print(data);
-
-    //get properties from json data
-    String datetime = data['datetime'];
-    String offset = data['utc_offset'].substring(1,3);
-    DateTime now = DateTime.parse(datetime);
-    now = now.add(Duration(hours: int.parse(offset)));
-    print(now);
+  
+  void setupWorldTime() async{
+    Worldtime instance = Worldtime(location:'Berlin', flag: 'germany.png', url: 'Atlantic/South_Georgia');
+    await instance.getTime();
+    Navigator.pushReplacementNamed(context, '/home', arguments: {
+      'location': instance.location,
+      'flag' : instance.flag,
+      'time' : instance.time
+    });//pushReplacementNamed does not put the home page on loading page,
+    // it replaces the loading page and then put the home page
+    // it have a third argument through which we can send the data
 
   }
 
   @override
   void initState() {
     super.initState();
-    getTime();
+    setupWorldTime();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Text('Loading Screen'),
+      body: SafeArea(
+        child:Center(child:
+        Container(
+          child: Text('Loading......'),
+        ),
+        ),
+      )
     );
   }
 }
